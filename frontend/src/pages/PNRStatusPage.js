@@ -83,28 +83,32 @@ const PNRStatusPage = () => {
 
           <div className="pnr-passengers">
             <h4>Passenger Details</h4>
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Age</th>
-                  <th>Gender</th>
-                  <th>Berth</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {booking.passengers.map((p, i) => (
-                  <tr key={i}>
-                    <td>{p.name}</td>
-                    <td>{p.age}</td>
-                    <td>{p.gender}</td>
-                    <td>{p.berthAllocation || p.berthPreference}</td>
-                    <td><span className={`status-${p.status.toLowerCase()}`}>{p.status}</span></td>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Coach</th>
+                    <th>Seat</th>
+                    <th>Berth</th>
+                    <th>Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {booking.passengers.map((p, i) => (
+                    <tr key={i}>
+                      <td>{p.name}</td>
+                      <td>{p.age}</td>
+                      <td>{p.gender}</td>
+                      <td><strong>{p.coachNumber}</strong></td>
+                      <td><strong>{p.seatNumber}</strong></td>
+                      <td>{p.berthAllocation || p.berthPreference}</td>
+                      <td><span className={`status-${p.status.toLowerCase()}`}>{p.status}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
           </div>
         </div>
       )}

@@ -70,6 +70,8 @@ const ConfirmationPage = () => {
                 <th>Name</th>
                 <th>Age</th>
                 <th>Gender</th>
+                <th>Coach</th>
+                <th>Seat</th>
                 <th>Berth</th>
                 <th>Status</th>
               </tr>
@@ -80,6 +82,8 @@ const ConfirmationPage = () => {
                   <td>{p.name}</td>
                   <td>{p.age}</td>
                   <td>{p.gender}</td>
+                  <td><strong>{p.coachNumber}</strong></td>
+                  <td><strong>{p.seatNumber}</strong></td>
                   <td>{p.berthAllocation || p.berthPreference}</td>
                   <td><span className="status-confirmed">{p.status}</span></td>
                 </tr>

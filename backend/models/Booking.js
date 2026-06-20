@@ -23,6 +23,14 @@ const passengerSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  coachNumber: {
+    type: String,
+    default: '',
+  },
+  seatNumber: {
+    type: Number,
+    default: 0,
+  },
   status: {
     type: String,
     enum: ['CNF', 'RAC', 'WL'],
@@ -45,6 +53,10 @@ const bookingSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Train',
     required: true,
+  },
+  route: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Route',
   },
   trainNumber: String,
   trainName: String,

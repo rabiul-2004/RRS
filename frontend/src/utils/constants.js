@@ -29,3 +29,25 @@ export const PAYMENT_METHODS = [
 export const GENDERS = ['Male', 'Female', 'Other'];
 
 export const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+export const SEATS_PER_COACH = {
+  SL: 80,
+  '3A': 80,
+  '2A': 60,
+  '1A': 40,
+  CC: 78,
+  EC: 56,
+  '2S': 108,
+  FC: 50,
+};
+
+export const COACH_PREFIX = {
+  SL: 'S',
+  '3A': 'B',
+  '2A': 'A',
+  '1A': 'H',
+  CC: 'C',
+  EC: 'E',
+  '2S': 'D',
+  FC: 'F',
+};

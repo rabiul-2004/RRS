@@ -5,7 +5,7 @@ import { CLASSES, BERTH_PREFERENCES, GENDERS } from '../utils/constants';
 const BookingPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { train, journeyDate, classType } = location.state || {};
+  const { routeId, train, boardingStop, deboardingStop, journeyDuration, journeyDistance, journeyDate, classType } = location.state || {};
 
   const [passengers, setPassengers] = useState([
     { name: '', age: '', gender: 'Male', berthPreference: 'No Preference' },
@@ -26,9 +26,7 @@ const BookingPage = () => {
   };
 
   const removePassenger = (index) => {
-    if (passengers.length > 1) {
-      setPassengers(passengers.filter((_, i) => i !== index));
-    }
+    if (passengers.length > 1) setPassengers(passengers.filter((_, i) => i !== index));
   };
 
   const updatePassenger = (index, field, value) => {
@@ -38,14 +36,18 @@ const BookingPage = () => {
   };
 
   const handleProceedToPayment = () => {
-    const valid = passengers.every(p => p.name && p.age && p.gender);
-    if (!valid) {
+    if (!passengers.every(p => p.name && p.age && p.gender)) {
       alert('Please fill all passenger details');
       return;
     }
     navigate('/payment', {
       state: {
+        routeId,
         train,
+        boardingStop,
+        deboardingStop,
+        journeyDuration,
+        journeyDistance,
         journeyDate,
         classType: travelClass,
         passengers,
@@ -54,8 +56,6 @@ const BookingPage = () => {
       },
     });
   };
-
-  const classInfo = CLASSES[travelClass];
 
   return (
     <div className="booking-page container">
@@ -69,16 +69,17 @@ const BookingPage = () => {
           </div>
           <div className="summary-route">
             <div className="summary-point">
-              <strong>{train.source}</strong>
-              <span>{train.departureTime}</span>
+              <strong>{boardingStop.station.name} ({boardingStop.station.code})</strong>
+              <span>{boardingStop.departureTime} | Day {boardingStop.dayNumber}</span>
             </div>
             <div className="summary-arrow">
               <i className="fas fa-arrow-right"></i>
-              <span>{train.duration}</span>
+              <span>{journeyDuration}</span>
+              <span>{journeyDistance} km</span>
             </div>
             <div className="summary-point">
-              <strong>{train.destination}</strong>
-              <span>{train.arrivalTime}</span>
+              <strong>{deboardingStop.station.name} ({deboardingStop.station.code})</strong>
+              <span>{deboardingStop.arrivalTime} | Day {deboardingStop.dayNumber}</span>
             </div>
           </div>
           <div className="summary-date">
@@ -97,7 +98,7 @@ const BookingPage = () => {
               <button
                 key={cls.name}
                 className={`class-option ${travelClass === cls.name ? 'active' : ''}`}
-                onClick={() => setTravelClass(cls.name)}
+                onClick={() => { setTravelClass(cls.name); if (cls._id) {} }}
                 disabled={cls.availableSeats <= 0}
               >
                 <span className="class-code">{cls.name}</span>
@@ -132,41 +133,23 @@ const BookingPage = () => {
               <div className="passenger-grid">
                 <div className="form-group">
                   <label>Name</label>
-                  <input
-                    type="text"
-                    value={passenger.name}
-                    onChange={(e) => updatePassenger(index, 'name', e.target.value)}
-                    placeholder="Full name"
-                    required
-                  />
+                  <input type="text" value={passenger.name}
+                    onChange={(e) => updatePassenger(index, 'name', e.target.value)} placeholder="Full name" required />
                 </div>
                 <div className="form-group">
                   <label>Age</label>
-                  <input
-                    type="number"
-                    value={passenger.age}
-                    onChange={(e) => updatePassenger(index, 'age', Number(e.target.value))}
-                    placeholder="Age"
-                    min="1"
-                    max="120"
-                    required
-                  />
+                  <input type="number" value={passenger.age}
+                    onChange={(e) => updatePassenger(index, 'age', Number(e.target.value))} placeholder="Age" min="1" max="120" required />
                 </div>
                 <div className="form-group">
                   <label>Gender</label>
-                  <select
-                    value={passenger.gender}
-                    onChange={(e) => updatePassenger(index, 'gender', e.target.value)}
-                  >
+                  <select value={passenger.gender} onChange={(e) => updatePassenger(index, 'gender', e.target.value)}>
                     {GENDERS.map(g => <option key={g} value={g}>{g}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
                   <label>Berth Preference</label>
-                  <select
-                    value={passenger.berthPreference}
-                    onChange={(e) => updatePassenger(index, 'berthPreference', e.target.value)}
-                  >
+                  <select value={passenger.berthPreference} onChange={(e) => updatePassenger(index, 'berthPreference', e.target.value)}>
                     {BERTH_PREFERENCES.map(b => <option key={b} value={b}>{b}</option>)}
                   </select>
                 </div>
@@ -181,7 +164,7 @@ const BookingPage = () => {
             <span className="fare-amount">₹{baseFare} × {passengers.length} = ₹{totalFare}</span>
           </div>
           <button className="btn btn-primary btn-lg" onClick={handleProceedToPayment}>
-            <i className="fas fa-credit-card"></i> Proceed to Payment - ₹{totalFare}
+            <i className="fas fa-credit-card"></i> Proceed to Payment — ₹{totalFare}
           </button>
         </div>
       </div>

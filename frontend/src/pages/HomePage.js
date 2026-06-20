@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { trainAPI } from '../utils/api';
+import { routeAPI, stationAPI } from '../utils/api';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -12,18 +12,16 @@ const HomePage = () => {
     class: '',
   });
   const [loading, setLoading] = useState(false);
-  const [trains, setTrains] = useState([]);
+  const [results, setResults] = useState([]);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchStations = async () => {
       try {
-        const { data } = await trainAPI.getStations();
+        const { data } = await stationAPI.getAll();
         setStations(data);
-      } catch (err) {
-        console.error('Failed to fetch stations');
-      }
+      } catch (_) {}
     };
     fetchStations();
   }, []);
@@ -47,8 +45,8 @@ const HomePage = () => {
         date: formData.date,
       };
       if (formData.class) params.class = formData.class;
-      const { data } = await trainAPI.search(params);
-      setTrains(data);
+      const { data } = await routeAPI.search(params);
+      setResults(data);
       setSearched(true);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to search trains');
@@ -57,12 +55,17 @@ const HomePage = () => {
     }
   };
 
-  const handleBookNow = (train) => {
-    navigate(`/booking/${train._id}`, {
+  const handleBookNow = (result) => {
+    navigate(`/booking/${result.train._id}`, {
       state: {
-        train,
+        routeId: result.routeId,
+        train: result.train,
+        boardingStop: result.boardingStop,
+        deboardingStop: result.deboardingStop,
+        journeyDuration: result.journeyDuration,
+        journeyDistance: result.journeyDistance,
         journeyDate: formData.date,
-        classType: formData.class || train.classes[0]?.name,
+        classType: formData.class || result.train.classes[0]?.name,
       },
     });
   };
@@ -73,7 +76,7 @@ const HomePage = () => {
         <div className="hero-overlay">
           <div className="hero-content">
             <h1>Indian Railway Reservation System</h1>
-            <p>Book train tickets with ease - IRCTC Official Partner</p>
+            <p>Book train tickets with ease — IRCTC Official Partner</p>
           </div>
         </div>
       </div>
@@ -86,42 +89,24 @@ const HomePage = () => {
               <div className="search-grid">
                 <div className="form-group">
                   <label><i className="fas fa-circle-dot"></i> From</label>
-                  <input
-                    list="source-stations"
-                    name="source"
-                    value={formData.source}
-                    onChange={handleChange}
-                    placeholder="Enter source station"
-                    required
-                  />
-                  <datalist id="source-stations">
-                    {stations.map((s, i) => <option key={i} value={s} />)}
+                  <input list="src-list" name="source" value={formData.source}
+                    onChange={handleChange} placeholder="Enter source station" required />
+                  <datalist id="src-list">
+                    {stations.map(s => <option key={s._id} value={s.name} />)}
                   </datalist>
                 </div>
                 <div className="form-group">
                   <label><i className="fas fa-location-dot"></i> To</label>
-                  <input
-                    list="dest-stations"
-                    name="destination"
-                    value={formData.destination}
-                    onChange={handleChange}
-                    placeholder="Enter destination station"
-                    required
-                  />
-                  <datalist id="dest-stations">
-                    {stations.map((s, i) => <option key={i} value={s} />)}
+                  <input list="dst-list" name="destination" value={formData.destination}
+                    onChange={handleChange} placeholder="Enter destination station" required />
+                  <datalist id="dst-list">
+                    {stations.map(s => <option key={s._id} value={s.name} />)}
                   </datalist>
                 </div>
                 <div className="form-group">
                   <label><i className="fas fa-calendar"></i> Date</label>
-                  <input
-                    type="date"
-                    name="date"
-                    value={formData.date}
-                    onChange={handleChange}
-                    min={new Date().toISOString().split('T')[0]}
-                    required
-                  />
+                  <input type="date" name="date" value={formData.date}
+                    onChange={handleChange} min={new Date().toISOString().split('T')[0]} required />
                 </div>
                 <div className="form-group">
                   <label><i className="fas fa-chair"></i> Class</label>
@@ -152,62 +137,66 @@ const HomePage = () => {
         <div className="train-results container">
           <h3>
             <i className="fas fa-train"></i> Trains from {formData.source} to {formData.destination}
-            <span className="result-count"> ({trains.length} found)</span>
+            <span className="result-count"> ({results.length} found)</span>
           </h3>
 
-          {trains.length === 0 ? (
+          {results.length === 0 ? (
             <div className="no-trains">
               <i className="fas fa-train fa-3x"></i>
               <p>No trains found for this route. Try different stations or date.</p>
             </div>
           ) : (
             <div className="train-list">
-              {trains.map((train) => (
-                <div key={train._id} className="train-card">
-                  <div className="train-header">
-                    <div className="train-info">
-                      <h4>{train.name}</h4>
-                      <span className="train-number">{train.number}</span>
-                    </div>
-                  </div>
-
-                  <div className="train-route">
-                    <div className="route-point">
-                      <div className="time">{train.departureTime}</div>
-                      <div className="station">{train.source}</div>
-                    </div>
-                    <div className="route-line">
-                      <div className="line"></div>
-                      <i className="fas fa-train"></i>
-                      <div className="line"></div>
-                      <span className="duration">{train.duration}</span>
-                    </div>
-                    <div className="route-point">
-                      <div className="time">{train.arrivalTime}</div>
-                      <div className="station">{train.destination}</div>
-                    </div>
-                  </div>
-
-                  <div className="train-classes">
-                    {train.classes.map((cls) => (
-                      <div key={cls.name} className="class-item">
-                        <span className="class-name">{cls.name}</span>
-                        <span className="class-fare">₹{cls.fare}</span>
-                        <span className={`class-seats ${cls.availableSeats < 10 ? 'low' : ''}`}>
-                          {cls.availableSeats} seats
-                        </span>
+              {results.map((r, idx) => {
+                const train = r.train;
+                const board = r.boardingStop;
+                const deboard = r.deboardingStop;
+                return (
+                  <div key={idx} className="train-card">
+                    <div className="train-header">
+                      <div className="train-info">
+                        <h4>{train.name}</h4>
+                        <span className="train-number">{train.number}</span>
                       </div>
-                    ))}
-                  </div>
+                    </div>
 
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => handleBookNow(train)}
-                  >
-                    <i className="fas fa-ticket"></i> Book Now
-                  </button>
-                </div>
-              ))}
+                    <div className="train-route">
+                      <div className="route-point">
+                        <div className="time">{board.departureTime}</div>
+                        <div className="station">{board.station.name} ({board.station.code})</div>
+                        <div className="station-detail">Day {board.dayNumber}</div>
+                      </div>
+                      <div className="route-line">
+                        <div className="line"></div>
+                        <i className="fas fa-train"></i>
+                        <div className="line"></div>
+                        <span className="duration">{r.journeyDuration}</span>
+                      </div>
+                      <div className="route-point">
+                        <div className="time">{deboard.arrivalTime}</div>
+                        <div className="station">{deboard.station.name} ({deboard.station.code})</div>
+                        <div className="station-detail">Day {deboard.dayNumber}</div>
+                      </div>
+                    </div>
+
+                    <div className="train-classes">
+                      {train.classes.map((cls) => (
+                        <div key={cls.name} className="class-item">
+                          <span className="class-name">{cls.name}</span>
+                          <span className="class-fare">₹{cls.fare}</span>
+                          <span className={`class-seats ${cls.availableSeats < 10 ? 'low' : ''}`}>
+                            {cls.availableSeats} seats
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <button className="btn btn-primary" onClick={() => handleBookNow(r)}>
+                      <i className="fas fa-ticket"></i> Book Now
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
