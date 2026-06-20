@@ -1,0 +1,14 @@
+{
+  "name": "railway-reservation-system",
+  "version": "1.0.0",
+  "description": "Railway Reservation System - IRCTC Clone (MERN Stack)",
+  "scripts": {
+    "server": "cd backend && npm start",
+    "client": "cd frontend && npm start",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
