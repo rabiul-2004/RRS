@@ -30,7 +30,7 @@ const stopSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
-}, { _id: false });
+});
 
 const routeSchema = new mongoose.Schema({
   train: {
