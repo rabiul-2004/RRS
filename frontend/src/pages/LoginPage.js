@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
@@ -8,6 +8,8 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || '/';
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -19,7 +21,7 @@ const LoginPage = () => {
     setLoading(true);
     try {
       await login(formData.email, formData.password);
-      navigate('/');
+      navigate(from, { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
     } finally {

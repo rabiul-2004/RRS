@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { routeAPI, stationAPI } from '../utils/api';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [stations, setStations] = useState([]);
   const [formData, setFormData] = useState({
     source: '',
@@ -56,6 +58,10 @@ const HomePage = () => {
   };
 
   const handleBookNow = (result) => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: window.location.pathname } });
+      return;
+    }
     navigate(`/booking/${result.train._id}`, {
       state: {
         routeId: result.routeId,

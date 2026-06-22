@@ -61,10 +61,10 @@ router.get('/search', async (req, res) => {
       const durationStr = `${hours}h ${mins.toString().padStart(2, '0')}m`;
       const distance = (dstStop.distance || 0) - (srcStop.distance || 0);
 
-      let classes = train.classes.map(c => {
-        const ratio = distance / (route.stops[route.stops.length - 1].distance || 1);
-        return { ...c.toObject(), fare: Math.round(c.fare * ratio) };
-      });
+      let classes = train.classes.map(c => ({
+        ...c,
+        fare: Math.round(c.fare * distance / (route.stops[route.stops.length - 1].distance || 1)),
+      }));
 
       if (classType) {
         classes = classes.filter(c => c.name.toUpperCase() === classType.toUpperCase());
